@@ -23,7 +23,7 @@ enum Commands {
         output:String,
         passwd:String,
     },
-    Decrypt { 
+    Decrypt {
         input:String,
         output:String,
         passwd:String,
@@ -35,10 +35,10 @@ fn main() -> eyre::Result<()>{
     let before = Instant::now();
     match &cli.command {
         Commands::Encrypt { input, output, passwd } => {
-            encrypt(&input, &passwd, output)?;
+            encrypt(input, passwd, output)?;
         },
         Commands::Decrypt { input, output, passwd} => {
-            decrypt(&input, &passwd, output)?;
+            decrypt(input, passwd, output)?;
         },
     }
     println!("complete dur:{}",before.elapsed().as_secs());
@@ -46,7 +46,7 @@ fn main() -> eyre::Result<()>{
 }
 
 fn encrypt(path:&str, passwd:&str, output:&str) -> eyre::Result<()> {
-    const BUFFER_SIZE:usize = CHUNK_SIZE + 0;
+    const BUFFER_SIZE:usize = CHUNK_SIZE;
     use aes_gcm_siv::{
         aead::{Aead, KeyInit},
         Aes256GcmSiv, Nonce
@@ -62,14 +62,14 @@ fn encrypt(path:&str, passwd:&str, output:&str) -> eyre::Result<()> {
         let readed = input.read(&mut buf)?;
         if readed == BUFFER_SIZE {
             let cipherbytes = cipher.encrypt(nonce, buf.as_slice()).unwrap();
-            output.write(&cipherbytes)?;
+            output.write_all(&cipherbytes)?;
         } else {
             let cipherbytes = cipher.encrypt(nonce, buf.as_slice()).unwrap();
-            output.write(&cipherbytes)?;
+            output.write_all(&cipherbytes)?;
             break;
         }
     }
-    return Ok(());
+    Ok(())
 }
 fn decrypt(path:&str, passwd:&str, output:&str) -> eyre::Result<()> {
     const BUFFER_SIZE:usize = CHUNK_SIZE +16;
@@ -89,13 +89,13 @@ fn decrypt(path:&str, passwd:&str, output:&str) -> eyre::Result<()> {
         let readed = input.read(&mut buf)?;
         if readed == BUFFER_SIZE {
             let plainbytes = cipher.decrypt(nonce, buf.as_slice()).unwrap();
-            output.write(&plainbytes)?;
+            output.write_all(&plainbytes)?;
         } else {
             let plainbytes = cipher.decrypt(nonce, buf.as_slice()).unwrap();
-            output.write(&plainbytes)?;
+            output.write_all(&plainbytes)?;
             break;
         }
     }
 
-    return Ok(());
+    Ok(())
 }

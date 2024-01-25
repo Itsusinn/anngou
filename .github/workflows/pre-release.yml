@@ -128,9 +128,6 @@ jobs:
           name: compile
           path: ./packages
 
-      - name: Compress
-        run: bash ./.github/compress.sh
-
       - name: Github release
         uses: "marvinpinto/action-automatic-releases@latest"
         with:
